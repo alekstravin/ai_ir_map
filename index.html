@@ -156,12 +156,14 @@ canvas:active { cursor: grabbing; }
 <body>
 <header>
     <h1>Интерактивная карта: ИИ и международные отношения (с российским контекстом)</h1>
-    <div class="subtitle">Визуализация научных кластеров • Размер узла = объем публикаций • Толщина линии = сила связи • <span class="legend-star">*</span> Российские темы</div>
+    <div class="subtitle">
+        Визуализация научных кластеров • Размер узла = объем публикаций • Толщина линии = сила связи • <span class="legend-star">*</span> Российские темы
+    </div>
     <div class="legend">
-      <span class="legend-item"><span class="legend-circle" style="background:#3b82f6"></span>Научный кластер</span>
-      <span class="legend-item"><span class="legend-star">*</span>Российские темы</span>
-      <span class="legend-item">Толщина линии = сила связи</span>
-      <span class="legend-item">Размер кружка = публикаций</span>
+        <span class="legend-item"><span class="legend-circle" style="background:#3b82f6"></span>Научный кластер</span>
+        <span class="legend-item"><span class="legend-star">*</span>Российские темы</span>
+        <span class="legend-item">Толщина линии = сила связи</span>
+        <span class="legend-item">Размер кружка = публикаций</span>
     </div>
 </header>
 <div id="main-container">
@@ -183,7 +185,12 @@ canvas:active { cursor: grabbing; }
         <button id="back-btn" class="back-btn">← Назад к обзору</button>
         <div class="sidebar-title">Исследовательские кластеры</div>
         <div class="cluster-list-title"></div>
+        
+        <!-- Список кластеров - ВСЕГДА с scroll и ТОЛЬКО кластер-item! -->
         <div id="cluster-list"></div>
+        
+        <!-- Блок для публикаций и связей - scroll, НИКОГДА не кластер-item -->
+        <div class="publications-section"></div>
     </div>
 </div>
 <script>
@@ -434,10 +441,16 @@ function resetClusterPositions() {
 }
     
     
-function renderList() {
-  list.innerHTML = "";
+const clusterList = document.getElementById('cluster-list');          // scroll только для кластеров
+const publicationsSection = document.querySelector('.publications-section'); // scroll только для публикаций/связей
+const backBtn = document.getElementById('back-btn');
 
-  // 1. Сначала рендерим все кластеры (чтобы они шли вначале и всегда были видимы)
+function renderList() {
+  // Очищаем оба блока
+  clusterList.innerHTML = '';
+  publicationsSection.innerHTML = '';
+
+  // 1. Рендерим ВСЕ кластеры (только сюда!)
   clusters.forEach(n => {
     const it = document.createElement('div');
     it.className = 'cluster-item' + (n.isRussia ? ' russia-related' : '') + (selected && selected.id === n.id ? ' selected' : '');
@@ -449,7 +462,6 @@ function renderList() {
 
     const nametxt = document.createElement('span');
     nametxt.textContent = n.label;
-
     if (n.isRussia) {
       const star = document.createElement('span');
       star.className = 'cluster-star';
@@ -467,13 +479,14 @@ function renderList() {
     it.appendChild(cc);
 
     it.onclick = () => select(n);
-    list.appendChild(it);
+    clusterList.appendChild(it);
   });
 
+  // 2. Публикации и связи (только сюда!)
   if (selected) {
     backBtn.classList.add('visible');
 
-    // 2. Связанные кластеры (связи)
+    // Связи
     const neigh = connections.filter(c =>
       c.from === selected.id || c.to === selected.id
     ).map(c => {
@@ -522,17 +535,17 @@ function renderList() {
       item.appendChild(strength);
 
       item.onclick = () => select(node);
-      list.appendChild(item);
+      publicationsSection.appendChild(item); // !!! В publicationsSection
     });
 
-    // 3. Публикации по выбранному кластеру
+    // Публикации
     if (publications[selected.id]) {
       const ph = document.createElement('div');
-      ph.className = 'publications-section';
-      ph.style.margin = '14px 0 6px';
+      ph.className = 'publications-section-title';
+      ph.style.margin = '10px 0 6px';
       ph.style.fontWeight = 'bold';
       ph.textContent = 'Публикации по выбранной теме';
-      list.appendChild(ph);
+      publicationsSection.appendChild(ph);
 
       publications[selected.id].forEach(pub => {
         const it = document.createElement('div');
@@ -565,15 +578,17 @@ function renderList() {
         m.appendChild(a);
 
         it.appendChild(m);
-        list.appendChild(it);
+        publicationsSection.appendChild(it); // !!! В publicationsSection
       });
     }
   } else {
     backBtn.classList.remove('visible');
   }
 }
+
 backBtn.addEventListener('click', ()=>select(null));
 renderList(); draw();
+
 function saveLayout(){
   localStorage.setItem('ai_ir_layout', JSON.stringify(
     clusters.map(({id,x,y}) => ({id,x,y}))
