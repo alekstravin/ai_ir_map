@@ -149,6 +149,8 @@ const list = document.getElementById('cluster-list');
 const backBtn = document.getElementById('back-btn');
 const tooltip = document.getElementById('tooltip');
 let W,H,zoom=1,panX=0,panY=0,isDrag=false,sx=0,sy=0,selected=null, hoveredNode = null;
+let draggingNode = null;
+let dragOffsetX = 0, dragOffsetY = 0;
 
 function resize(){
     W=canvas.width=canvas.parentElement.clientWidth;
@@ -158,26 +160,95 @@ function resize(){
 }
 window.addEventListener('resize',resize); resize();
 
-canvas.addEventListener('mousedown',e=>{
-    isDrag=true; sx=e.clientX-panX; sy=e.clientY-panY;
+canvas.addEventListener('mousedown', e => {
+  const r = canvas.getBoundingClientRect();
+  const x = (e.clientX - r.left - panX) / zoom;
+  const y = (e.clientY - r.top - panY) / zoom;
+
+  const hit = clusters.find(n => Math.hypot(x - n.x, y - n.y) < n.size);
+  if (hit) {
+    draggingNode = hit;
+    dragOffsetX = x - hit.x;
+    dragOffsetY = y - hit.y;
+    isDrag = false;
+  } else {
+    isDrag = true;
+    sx = e.clientX - panX;
+    sy = e.clientY - panY;
+  }
 });
-canvas.addEventListener('mousemove',e=>{ 
-    if(isDrag){
-        panX=e.clientX-sx; panY=e.clientY-sy; draw(); 
-    } else {
-        const r=canvas.getBoundingClientRect(), x=(e.clientX-r.left-panX)/zoom, y=(e.clientY-r.top-panY)/zoom;
-        hoveredNode = clusters.find(n=>Math.hypot(x-n.x,y-n.y)<n.size);
-        updateTooltip(hoveredNode);
-        draw();
-    }
-});
-canvas.addEventListener('mouseup',()=>isDrag=false);
-canvas.addEventListener('mouseleave',()=>{
-    isDrag=false;
-    hoveredNode = null;
-    updateTooltip(null);
+
+canvas.addEventListener('mousemove', e => {
+  const r = canvas.getBoundingClientRect();
+  const x = (e.clientX - r.left - panX) / zoom;
+  const y = (e.clientY - r.top - panY) / zoom;
+
+  if (draggingNode) {
+    draggingNode.x = x - dragOffsetX;
+    draggingNode.y = y - dragOffsetY;
     draw();
+  } else if (isDrag) {
+    panX = e.clientX - sx;
+    panY = e.clientY - sy;
+    draw();
+  } else {
+    hoveredNode = clusters.find(n => Math.hypot(x - n.x, y - n.y) < n.size);
+    updateTooltip(hoveredNode);
+    draw();
+  }
 });
+
+canvas.addEventListener('mouseup', () => {
+  draggingNode = null;
+  isDrag = false;
+});
+
+canvas.addEventListener('mouseleave', () => {
+  draggingNode = null;
+  isDrag = false;
+  hoveredNode = null;
+  updateTooltip(null);
+  draw();
+});
+function getTouchXY(ev){
+  const t = ev.touches[0] || ev.changedTouches[0];
+  const r = canvas.getBoundingClientRect();
+  return {
+    x: (t.clientX - r.left - panX) / zoom,
+    y: (t.clientY - r.top - panY) / zoom,
+    cx: t.clientX, cy: t.clientY
+  };
+}
+
+canvas.addEventListener('touchstart', ev => {
+  ev.preventDefault();
+  const p = getTouchXY(ev);
+  const hit = clusters.find(n => Math.hypot(p.x - n.x, p.y - n.y) < n.size);
+  if (hit) {
+    draggingNode = hit;
+    dragOffsetX = p.x - hit.x;
+    dragOffsetY = p.y - hit.y;
+  } else {
+    isDrag = true; sx = p.cx - panX; sy = p.cy - panY;
+  }
+}, {passive:false});
+
+canvas.addEventListener('touchmove', ev => {
+  ev.preventDefault();
+  const p = getTouchXY(ev);
+  if (draggingNode) {
+    draggingNode.x = p.x - dragOffsetX;
+    draggingNode.y = p.y - dragOffsetY;
+  } else if (isDrag) {
+    panX = p.cx - sx; panY = p.cy - sy;
+  }
+  draw();
+}, {passive:false});
+
+canvas.addEventListener('touchend', ev => {
+  draggingNode = null; isDrag = false;
+}, {passive:false});
+    
 canvas.addEventListener('wheel',e=>{
     const d=e.deltaY>0?0.9:1.1, old=zoom;
     zoom=Math.max(.3,Math.min(3,zoom*d));
@@ -341,6 +412,22 @@ function renderList(){
 }
 backBtn.addEventListener('click', ()=>select(null));
 renderList(); draw();
+function saveLayout(){
+  localStorage.setItem('ai_ir_layout', JSON.stringify(
+    clusters.map(({id,x,y}) => ({id,x,y}))
+  ));
+}
+function loadLayout(){
+  const raw = localStorage.getItem('ai_ir_layout');
+  if(!raw) return;
+  const pos = new Map(JSON.parse(raw).map(p => [p.id, p]));
+  clusters.forEach(n => { const p=pos.get(n.id); if(p){ n.x=p.x; n.y=p.y; } });
+}
+loadLayout();
+// вызывать сохранение после перерисовки
+const _draw = draw;
+draw = function(){ _draw(); saveLayout(); };
+    
 </script>
 </body>
 </html>
