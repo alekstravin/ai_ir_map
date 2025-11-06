@@ -25,20 +25,19 @@ h1 {font-size:28px;font-weight:700;color:#f1f5f9;margin-bottom:8px;}
 #sidebar {
     width: 400px;
     min-width: 260px;
+    height: 100vh;
     background: rgba(30,41,59,0.95);
     padding: 20px;
-    overflow-y: auto;
-    border-left: 2px solid #334155;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    max-height: 100vh;
+    overflow: hidden; /* важно: только внутренний скролл */
 }
 #cluster-list {
     flex: 1 1 auto;
     overflow-y: auto;
-    max-height: 70vh;
+    min-height: 80px;
+    max-height: calc(100vh - 200px); /* 200px — расчетная высота для шапки, кнопок, etc */
 }
 .publications-section {
     margin-top:20px;
