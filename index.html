@@ -14,7 +14,6 @@ h1 {font-size:28px;font-weight:700;color:#f1f5f9;margin-bottom:8px;}
 .legend-item {display:flex;align-items:center;gap:6px;font-size:14px;}
 .legend-star {color:#c026d3;font-weight:bold;margin-right:3px;font-size:17px;}
 .legend-circle {width:17px;height:17px;border-radius:50%;display:inline-block;margin-right:4px;}
-
 #main-container {
     display: flex;
     height: 100vh;
@@ -22,6 +21,7 @@ h1 {font-size:28px;font-weight:700;color:#f1f5f9;margin-bottom:8px;}
 }
 
 #canvas-container {flex:1;position:relative;overflow:visible;min-width:320px;}
+
 #sidebar {
     width: 400px;
     min-width: 260px;
@@ -36,21 +36,19 @@ h1 {font-size:28px;font-weight:700;color:#f1f5f9;margin-bottom:8px;}
     max-height: 100vh;
 }
 #cluster-list {
-    flex:1 1 auto;
+    flex: 1 1 auto;
     overflow-y: auto;
-    min-height: 80px;
-    overflow: visible;
-    max-height:none
-    }
-    
+    max-height: 70vh;
+}
 .publications-section {
     margin-top:20px;
     background:rgba(15,23,42,0.4);
     border-radius:8px;
     padding:16px;
-    max-height:240px; /* Можно увеличить для показа большего числа публикаций */
+    max-height:180px;
     overflow-y:auto;
 }
+
 .sidebar-title {font-size:20px;font-weight:700;color:#f1f5f9;margin-bottom:16px;}
 .cluster-list-title {font-size:15px;margin-bottom:7px;color:#94a3b8;}
 .back-btn {background:rgba(59,130,246,0.2)!important;border:1.5px solid #3b82f6;color:#60a5fa;padding:10px 16px;border-radius:6px;cursor:pointer;font-size:15px;margin-bottom:16px;margin-top:6px;transition:all 0.22s;display:none;font-weight:500;outline:none;}
