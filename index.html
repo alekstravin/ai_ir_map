@@ -90,21 +90,17 @@ canvas:active {cursor:grabbing;}
 /* --- Адаптивные стили --- */
 @media (max-width: 900px) {
   #sidebar { width: 320px; padding:12px; }
-  header { padding: 12px 8px; }
 }
 @media (max-width: 700px) {
   #main-container { flex-direction: column; height:auto;}
-  #sidebar { width: 100% !important; max-width:100vw; height:auto; min-height:100px; max-height:56vh; border-left:none; border-top:2px solid #334155;}
+  #sidebar { width:100%; max-width:100vw; height:auto; max-height:56vh; }
   #cluster-list { max-height:29vh; min-height:40px;}
   .publications-section { max-height:100px;}
 }
 @media (max-width: 430px) {
-  h1 { font-size: 17px; }
-  .subtitle { font-size: 11px; }
-  .sidebar-title, .cluster-list-title { font-size: 14px; }
-  .cluster-item, .connection-item { font-size:12px; padding:8px 6px;}
   .publications-section { max-height:150px;}
 }
+
 /* Для мобильных — скроллинг обязателен */
 
 </style>
