@@ -485,6 +485,8 @@ function select(node){
 }
 
 function draw(){
+  const computedStyle = getComputedStyle(document.body);
+  const textColor = computedStyle.getPropertyValue('--text-color').trim();
     ctx.clearRect(0,0,W,H);
     ctx.save(); ctx.translate(panX,panY); ctx.scale(zoom,zoom);
     // edges
@@ -522,10 +524,14 @@ function draw(){
         if(n.isRussia){ ctx.fillStyle='#fff'; ctx.font='bold 16px sans-serif'; ctx.fillText('★', n.x-7, n.y-n.size-22); }
         ctx.save(); ctx.font='15px sans-serif'; ctx.textAlign='center';
         let metrics = ctx.measureText(n.label), textHeight = 18;
-        ctx.fillStyle = `rgba(15,23,42,${0.88 * opacity})`;
+        const isDarkTheme = document.body.classList.contains('dark-theme');
+        const labelBg = isDarkTheme ? `rgba(15,23,42,${0.88 * opacity})` : `rgba(255,255,255,${0.92 * opacity})`;
+        ctx.fillStyle = labelBg;
         ctx.fillRect(n.x-(metrics.width/2)-4,n.y-n.size-textHeight-4,metrics.width+8,textHeight+4);
         ctx.restore();
-        ctx.fillStyle='#fff'; ctx.font='15px sans-serif'; ctx.textAlign='center';
+        ctx.fillStyle = textColor; // используем переменную из начала функции
+        ctx.font='15px sans-serif'; ctx.textAlign='center';
+        ctx.fillText(n.label, n.x, n.y-n.size-8);
         ctx.fillText(n.label, n.x, n.y-n.size-8);
     });
     ctx.restore();
